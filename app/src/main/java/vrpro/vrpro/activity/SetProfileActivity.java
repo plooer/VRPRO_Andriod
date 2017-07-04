@@ -2,6 +2,7 @@ package vrpro.vrpro.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -23,10 +24,13 @@ public class SetProfileActivity extends AppCompatActivity {
     private EditText txtSaleName;
     private EditText txtPhoneNumber;
     private EditText txtSetQuatationNo;
+    private EditText txtSetQuatationRunningNo;
     private SQLiteUtil sqlLite;
     private ProfileSaleModel profileSaleModel;
     private ProfileSaleModel profileSaleModelFromDB;
     Toolbar mActionBarToolbar;
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +42,12 @@ public class SetProfileActivity extends AppCompatActivity {
         setSupportActionBar(mActionBarToolbar);
         getSupportActionBar().setTitle("Profile");
 
+        sharedPref = this.getSharedPreferences(getString(R.string.preference_key), Context.MODE_PRIVATE);
+
         txtSaleName = (EditText) findViewById(R.id.txtsaleName);
         txtPhoneNumber = (EditText) findViewById(R.id.txtphoneNumber);
         txtSetQuatationNo = (EditText) findViewById(R.id.txtSetQuatationNo);
+        txtSetQuatationRunningNo = (EditText) findViewById(R.id.txtSetQuatationRunningNo);
 
         initialProfile();
 
@@ -58,6 +65,7 @@ public class SetProfileActivity extends AppCompatActivity {
         TextView txtvwUserName = (TextView) findViewById(R.id.viewUsername);
         TextView txtvwUserPhone = (TextView) findViewById(R.id.viewPhoneNumber);
         TextView txtvwQuatationNo = (TextView) findViewById(R.id.viewQuatationNo);
+        TextView txtvwQuatationRunningNo = (TextView) findViewById(R.id.viewQuatationRunningNo);
 
         sqlLite = new SQLiteUtil(this);
         profileSaleModelFromDB = sqlLite.getProfileSale();
@@ -66,11 +74,13 @@ public class SetProfileActivity extends AppCompatActivity {
             txtvwUserName.setText(profileSaleModelFromDB.getSaleName());
             txtvwUserPhone.setText(profileSaleModelFromDB.getSalePhone());
             txtvwQuatationNo.setText(profileSaleModelFromDB.getQuatationNo());
+            txtvwQuatationRunningNo.setText(String.valueOf(profileSaleModelFromDB.getQuatationRunningNo()));
         }else{
             Log.i(LOG_TAG,"Not set profile in DB");
             txtvwUserName.setText("");
             txtvwUserPhone.setText("");
             txtvwQuatationNo.setText("");
+            txtvwQuatationRunningNo.setText("");
         }
     }
 
@@ -79,26 +89,36 @@ public class SetProfileActivity extends AppCompatActivity {
             Toast.makeText(this, "Please enter your name, phone number and quataion.", Toast.LENGTH_SHORT).show();
 
         } else {
-            Log.i(LOG_TAG, "sale name : " + txtSaleName.getText().toString() + " phone number : " + txtPhoneNumber.getText().toString()+ " quatation no : " + txtSetQuatationNo.getText().toString());
+            Log.i(LOG_TAG, "sale name : " + txtSaleName.getText().toString() + " phone number : " + txtPhoneNumber.getText().toString()+ " quatation no : " + txtSetQuatationNo.getText().toString() + "running no : " + txtSetQuatationRunningNo.getText().toString());
 
             sqlLite = new SQLiteUtil(this);
             profileSaleModelFromDB = sqlLite.getProfileSale();
             Log.i(LOG_TAG,"ID: " + profileSaleModelFromDB.getID());
             if(profileSaleModelFromDB.getSaleName() != null){
                 Log.i(LOG_TAG,"Update DB");
-                profileSaleModel = new ProfileSaleModel();
-                profileSaleModel.setSaleName(txtSaleName.getText().toString());
-                profileSaleModel.setSalePhone(txtPhoneNumber.getText().toString());
-                profileSaleModel.setQuatationNo(txtSetQuatationNo.getText().toString());
-                profileSaleModel.setID(profileSaleModelFromDB.getID());
-                sqlLite = new SQLiteUtil(this);
-                sqlLite.updateProfileSale(profileSaleModel);
+                updateProfileToDB();
             }else{
                 Log.i(LOG_TAG,"Insert DB");
                 insertProfileToDB();
             }
+            editor = sharedPref.edit();
+            editor.putString("quatationNoDefine", txtSetQuatationNo.getText().toString());
+            editor.putInt("quatationRunningNoDefine", Integer.parseInt(txtSetQuatationRunningNo.getText().toString()));
+            editor.commit();
+
             gotoHomeActicity();
         }
+    }
+
+    private void updateProfileToDB() {
+        profileSaleModel = new ProfileSaleModel();
+        profileSaleModel.setSaleName(txtSaleName.getText().toString());
+        profileSaleModel.setSalePhone(txtPhoneNumber.getText().toString());
+        profileSaleModel.setQuatationNo(txtSetQuatationNo.getText().toString());
+        profileSaleModel.setQuatationRunningNo(Integer.parseInt(txtSetQuatationRunningNo.getText().toString()));
+        profileSaleModel.setID(profileSaleModelFromDB.getID());
+        sqlLite = new SQLiteUtil(this);
+        sqlLite.updateProfileSale(profileSaleModel);
     }
 
     private void insertProfileToDB() {
@@ -106,12 +126,13 @@ public class SetProfileActivity extends AppCompatActivity {
         profileSaleModel.setSaleName(txtSaleName.getText().toString());
         profileSaleModel.setSalePhone(txtPhoneNumber.getText().toString());
         profileSaleModel.setQuatationNo(txtSetQuatationNo.getText().toString());
+        profileSaleModel.setQuatationRunningNo(Integer.parseInt(txtSetQuatationRunningNo.getText().toString()));
         sqlLite = new SQLiteUtil(this);
         sqlLite.setProfileSale(profileSaleModel);
     }
 
     private boolean isInputsEmpty() {
-        return isEmpty(txtSaleName) || isEmpty(txtPhoneNumber)|| isEmpty(txtSetQuatationNo);
+        return isEmpty(txtSaleName) || isEmpty(txtPhoneNumber) || isEmpty(txtSetQuatationNo) || isEmpty(txtSetQuatationRunningNo);
     }
 
     private boolean isEmpty(EditText etText) {

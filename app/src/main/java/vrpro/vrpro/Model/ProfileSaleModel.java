@@ -9,6 +9,7 @@ public class ProfileSaleModel {
     private String saleName;
     private String salePhone;
     private String quatationNo;
+    private Integer quatationRunningNo;
 
     public Integer getID() {
         return ID;
@@ -40,5 +41,13 @@ public class ProfileSaleModel {
 
     public void setQuatationNo(String quatationNo) {
         this.quatationNo = quatationNo;
+    }
+
+    public Integer getQuatationRunningNo() {
+        return quatationRunningNo;
+    }
+
+    public void setQuatationRunningNo(Integer quatationRunningNo) {
+        this.quatationRunningNo = quatationRunningNo;
     }
 }

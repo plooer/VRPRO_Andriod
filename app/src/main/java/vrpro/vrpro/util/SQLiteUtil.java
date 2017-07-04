@@ -33,18 +33,21 @@ public class SQLiteUtil extends SQLiteOpenHelper {
     private String PROFILE_SALE_NAME = "sale_name";
     private String PROFILE_SALE_PHONE = "sale_phone";
     private String PROFILE_QUATATION_NO = "quatation_no";
+    private String PROFILE_QUATATION_RUNNING_NO = "quatation_running_no";
 
     private String ORDER_TABLE = "order_table";
     private String ORDER_ID = "ID";
-    private String ORDER_QUATATION_DATE = "quatation_date";
     private String ORDER_QUATATION_NO = "quatation_no";
+    private String ORDER_QUATATION_DATE = "quatation_date";
     private String ORDER_PROJECT_NAME = "project_name";
     private String ORDER_CUSTOMER_NAME = "customer_name";
     private String ORDER_CUSTOMER_ADDRESS = "customer_address";
     private String ORDER_CUSTOMER_PHONE = "customer_phone";
     private String ORDER_CUSTOMER_EMAIL = "customer_email";
-    private String ORDER_TOTAL_PRICE = "total_price";
     private String ORDER_REMARKS = "remarks";
+    private String ORDER_DISCOUNT = "discount";
+    private String ORDER_TOTAL_PRICE = "total_price";
+
 
     private String EACH_ORDER_TABLE = "each_order_list_table";
     private String EACH_ORDER_ID = "ID";
@@ -106,7 +109,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
 
     private void createTableOrder(SQLiteDatabase db) {
         String CREATE_ORDER = String.format("CREATE TABLE %s " +
-                        "(%s INTEGER PRIMARY KEY  AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
+                        "(%s INTEGER PRIMARY KEY  AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
                 ORDER_TABLE,
                 ORDER_ID,
                 ORDER_QUATATION_NO,
@@ -116,8 +119,9 @@ public class SQLiteUtil extends SQLiteOpenHelper {
                 ORDER_CUSTOMER_ADDRESS,
                 ORDER_CUSTOMER_PHONE,
                 ORDER_CUSTOMER_EMAIL,
-                ORDER_TOTAL_PRICE,
-                ORDER_REMARKS);
+                ORDER_REMARKS,
+                ORDER_DISCOUNT,
+                ORDER_TOTAL_PRICE);
 
         db.execSQL(CREATE_ORDER);
 
@@ -126,12 +130,13 @@ public class SQLiteUtil extends SQLiteOpenHelper {
 
     private String createTableProfileSale(SQLiteDatabase db) {
         String CREATE_TABLE_PROFILE_SALE = String.format("CREATE TABLE %s " +
-                        "(%s INTEGER PRIMARY KEY  AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT)",
+                        "(%s INTEGER PRIMARY KEY  AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s INTEGER)",
                 PROFILE_SALE_TABLE,
                 PROFILE_SALE_ID,
                 PROFILE_SALE_NAME,
                 PROFILE_SALE_PHONE,
-                PROFILE_QUATATION_NO);
+                PROFILE_QUATATION_NO,
+                PROFILE_QUATATION_RUNNING_NO);
 
         db.execSQL(CREATE_TABLE_PROFILE_SALE);
 
@@ -148,6 +153,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
         values.put(PROFILE_SALE_NAME, profileSaleModel.getSaleName());
         values.put(PROFILE_SALE_PHONE, profileSaleModel.getSalePhone());
         values.put(PROFILE_QUATATION_NO, profileSaleModel.getQuatationNo());
+        values.put(PROFILE_QUATATION_RUNNING_NO, profileSaleModel.getQuatationRunningNo());
 
         sqLiteDatabase.insert(PROFILE_SALE_TABLE, null, values);
 
@@ -172,6 +178,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
             profileSaleModel.setSaleName(cursor.getString(1));
             profileSaleModel.setSalePhone(cursor.getString(2));
             profileSaleModel.setQuatationNo(cursor.getString(3));
+            profileSaleModel.setQuatationRunningNo(cursor.getInt(4));
             cursor.moveToNext();
         }
         sqLiteDatabase.close();
@@ -188,6 +195,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
         values.put(PROFILE_SALE_NAME, profileSaleModel.getSaleName());
         values.put(PROFILE_SALE_PHONE, profileSaleModel.getSalePhone());
         values.put(PROFILE_QUATATION_NO, profileSaleModel.getQuatationNo());
+        values.put(PROFILE_QUATATION_RUNNING_NO, profileSaleModel.getQuatationRunningNo());
 
         int row = sqLiteDatabase.update(PROFILE_SALE_TABLE,
                 values,
@@ -209,16 +217,19 @@ public class SQLiteUtil extends SQLiteOpenHelper {
         values.put(ORDER_CUSTOMER_ADDRESS, orderModel.getCustomerAdress());
         values.put(ORDER_CUSTOMER_PHONE, orderModel.getCustomerPhone());
         values.put(ORDER_CUSTOMER_EMAIL, orderModel.getCustomerEmail());
-        values.put(ORDER_TOTAL_PRICE, orderModel.getTotalPricel());
         values.put(ORDER_REMARKS, orderModel.getRemarks());
+        values.put(ORDER_DISCOUNT, orderModel.getDiscount());
+        values.put(ORDER_TOTAL_PRICE, orderModel.getTotalPrice());
+
 
         sqLiteDatabase.insert(ORDER_TABLE, null, values);
 
         sqLiteDatabase.close();
+        Log.i(LOG_TAG,"insert order complete");
     }
 
     public List<OrderModel> getOrderList() {
-        Log.i(LOG_TAG,"ggetOrderList");
+        Log.i(LOG_TAG,"getOrderList");
         List<OrderModel> orderModelList = new ArrayList<OrderModel>();
         OrderModel orderModel;
 
@@ -241,8 +252,10 @@ public class SQLiteUtil extends SQLiteOpenHelper {
             orderModel.setCustomerAdress(cursor.getString(5));
             orderModel.setCustomerPhone(cursor.getString(6));
             orderModel.setCustomerEmail(cursor.getString(7));
-            orderModel.setTotalPricel(cursor.getDouble(8));
-            orderModel.setRemarks(cursor.getString(9));
+            orderModel.setRemarks(cursor.getString(8));
+            orderModel.setDiscount(cursor.getString(9));
+            orderModel.setTotalPrice(cursor.getDouble(10));
+
             orderModelList.add(orderModel);
             cursor.moveToNext();
         }
@@ -258,6 +271,48 @@ public class SQLiteUtil extends SQLiteOpenHelper {
 
 
         return orderModelList;
+    }
+
+    public OrderModel getOrderByQuatationNo(String quatationNo) {
+        Log.i(LOG_TAG,"getOrderByQuatationNo >>>> quatationNo : " + quatationNo);
+        OrderModel orderModel = new OrderModel();
+
+        sqLiteDatabase = this.getWritableDatabase();
+
+        String selection = ORDER_QUATATION_NO+ " = ?"; // MISSING in your update!!
+        String[] selectionArgs = new String[] { quatationNo };
+
+
+        Cursor cursor = sqLiteDatabase.query
+                (ORDER_TABLE, null, selection, selectionArgs, null, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+        }
+
+        while(!cursor.isAfterLast()) {
+            orderModel.setID(cursor.getInt(0));
+            orderModel.setQuatationNo(cursor.getString(1));
+            orderModel.setQuatationDate(cursor.getString(2));
+            orderModel.setProjectName(cursor.getString(3));
+            orderModel.setCustomerName(cursor.getString(4));
+            orderModel.setCustomerAdress(cursor.getString(5));
+            orderModel.setCustomerPhone(cursor.getString(6));
+            orderModel.setCustomerEmail(cursor.getString(7));
+            orderModel.setRemarks(cursor.getString(8));
+            orderModel.setDiscount((cursor.getString(9)));
+            orderModel.setTotalPrice(cursor.getDouble(10));
+            cursor.moveToNext();
+        }
+        sqLiteDatabase.close();
+
+        Log.i(LOG_TAG,"------------------------------");
+        Log.i(LOG_TAG,"id : " + orderModel.getID());
+        Log.i(LOG_TAG,"quatation no : " + orderModel.getQuatationNo());
+        Log.i(LOG_TAG,"customer name : " + orderModel.getCustomerName());
+        Log.i(LOG_TAG,"------------------------------");
+
+        return orderModel;
     }
 
     public void setEachOrderList(EachOrderModel eachOrderModel) {

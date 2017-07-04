@@ -21,7 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        android:theme="@style/AppTheme.ActionBar"/>
 
 
     <TextView
@@ -37,7 +38,7 @@
         android:gravity="center_vertical|left"/>
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="50dp"
         android:text="จิราภัสร์ จิรเดชวิโรจน์"
         android:id="@+id/viewUsername"
@@ -84,27 +85,57 @@
         android:text="quatation :"
         android:id="@+id/textView3"
         android:textSize="18sp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginStart="20dp"
         android:gravity="center_vertical|left"
-        android:layout_below="@+id/toolbar"
-        android:layout_marginTop="300dp"
-        android:layout_toRightOf="@+id/viewPhoneNumber"
-        android:layout_toEndOf="@+id/viewPhoneNumber" />
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="15dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_alignStart="@+id/textView1"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        />
+
+    <TextView
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:text="60#0-VR"
+        android:id="@+id/viewQuatationNo"
+        android:textSize="18sp"
+        android:gravity="center_vertical|left"
+        android:layout_above="@+id/txtsaleName"
+        android:layout_alignLeft="@+id/viewUsername"
+        android:layout_alignStart="@+id/viewUsername" />
+
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:text="60#0-VR1043"
-        android:id="@+id/viewQuatationNo"
+        android:text="running no. :"
+        android:id="@+id/textView4"
+        android:textSize="18sp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:gravity="center_vertical|left"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/viewQuatationNo"
+        android:layout_toEndOf="@+id/viewQuatationNo" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="60#0-VR"
+        android:id="@+id/viewQuatationRunningNo"
         android:textSize="18sp"
         android:layout_marginLeft="10dp"
         android:layout_marginStart="10dp"
         android:gravity="center_vertical|left"
-        android:layout_below="@+id/toolbar"
-        android:layout_marginTop="300dp"
-        android:layout_toRightOf="@+id/textView3"
-        android:layout_toEndOf="@+id/textView3" />
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/textView4"
+        android:layout_toEndOf="@+id/textView4" />
+
 
 
     <EditText
@@ -116,7 +147,7 @@
         android:padding="10dp"
         android:background="@drawable/selector_boarder_2"
         android:layout_marginTop="30dp"
-        android:layout_below="@+id/textView2"
+        android:layout_below="@+id/textView3"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginLeft="30dp"
@@ -155,6 +186,22 @@
         android:layout_alignRight="@+id/txtsaleName"
         android:layout_alignEnd="@+id/txtsaleName" />
 
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:hint="running no."
+        android:id="@+id/txtSetQuatationRunningNo"
+        android:layout_marginTop="30dp"
+        android:padding="10dp"
+        android:background="@drawable/selector_boarder_2"
+        android:layout_below="@+id/txtSetQuatationNo"
+        android:layout_alignLeft="@+id/txtsaleName"
+        android:layout_alignStart="@+id/txtsaleName"
+        android:layout_alignRight="@+id/txtsaleName"
+        android:layout_alignEnd="@+id/txtsaleName" />
+
     <Button
         android:layout_width="200dp"
         android:layout_height="wrap_content"
@@ -162,7 +209,7 @@
         android:id="@+id/btnSubmit"
         android:layout_marginTop="50dp"
         android:onClick="submit"
-        android:layout_below="@+id/txtSetQuatationNo"
+        android:layout_below="@+id/txtSetQuatationRunningNo"
         android:layout_centerHorizontal="true" />
 
 

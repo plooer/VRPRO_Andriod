@@ -18,7 +18,8 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:popupTheme="@style/AppTheme.PopupOverlay" />
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        android:theme="@style/AppTheme.ActionBar"/>
 
     <RelativeLayout
         android:id="@+id/profileCustomerLayout"
@@ -37,7 +38,7 @@
             android:layout_marginTop="20dp"
             android:gravity="center_vertical|left"
             android:text="เลขที่ใบเสนอราคา :"
-            android:textSize="20dp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/txtQuatationNo"
@@ -50,7 +51,7 @@
             android:layout_toRightOf="@+id/textView"
             android:gravity="center_vertical|left"
             android:text="60#0-VR1043"
-            android:textSize="20dp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/textView2"
@@ -62,7 +63,7 @@
             android:layout_toRightOf="@+id/txtQuatationNo"
             android:gravity="center_vertical|left"
             android:text="วันที่ :"
-            android:textSize="20dp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/txtQuatationDate"
@@ -74,7 +75,7 @@
             android:layout_toRightOf="@+id/textView2"
             android:gravity="center_vertical|left"
             android:text="26/06/2017"
-            android:textSize="20dp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/textView3"
@@ -86,7 +87,7 @@
             android:layout_marginTop="20dp"
             android:gravity="center_vertical|left"
             android:text="ข้อมูลลูกค้า :"
-            android:textSize="20dp" />
+            android:textSize="20sp" />
 
         <EditText
             android:id="@+id/txtCustomerName"
@@ -185,6 +186,62 @@
         android:gravity="top"
         android:lines="4"
          />
+
+    <LinearLayout
+        android:id="@+id/discount_totalpriceLinear"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:layout_below="@+id/remarks"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        >
+
+        <EditText
+            android:id="@+id/txtDiscount"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_centerVertical="true"
+            android:layout_weight="1"
+            android:background="@drawable/selector_boarder_2"
+            android:hint="ส่วนลดราคา"
+            android:inputType="numberDecimal"
+            android:padding="10dp"
+            android:scaleType="fitCenter" />
+
+        <LinearLayout
+            android:id="@+id/totalPriceLinear"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:text="ราคาสุทธิ :"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/txtTotalPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginLeft="10dp"
+                android:gravity="center_vertical|left"
+                android:scaleType="fitCenter"
+                android:text="0"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -88,7 +88,7 @@ public class SQLiteOrderUtil extends SQLiteOpenHelper {
         values.put(ORDER_CUSTOMER_ADDRESS, orderModel.getCustomerAdress());
         values.put(ORDER_CUSTOMER_PHONE, orderModel.getCustomerPhone());
         values.put(ORDER_CUSTOMER_EMAIL, orderModel.getCustomerEmail());
-        values.put(ORDER_TOTAL_PRICE, orderModel.getTotalPricel());
+        values.put(ORDER_TOTAL_PRICE, orderModel.getTotalPrice());
         values.put(ORDER_REMARKS, orderModel.getRemarks());
 
         sqLiteDatabase.insert(ORDER_TABLE, null, values);
@@ -120,7 +120,7 @@ public class SQLiteOrderUtil extends SQLiteOpenHelper {
             orderModel.setCustomerAdress(cursor.getString(5));
             orderModel.setCustomerPhone(cursor.getString(6));
             orderModel.setCustomerEmail(cursor.getString(7));
-            orderModel.setTotalPricel(cursor.getDouble(8));
+            orderModel.setTotalPrice(cursor.getDouble(8));
             orderModel.setRemarks(cursor.getString(9));
             orderModelList.add(orderModel);
             cursor.moveToNext();

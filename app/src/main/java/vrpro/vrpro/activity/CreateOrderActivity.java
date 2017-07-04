@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.List;
 
 import vrpro.vrpro.Model.EachOrderModel;
+import vrpro.vrpro.Model.OrderModel;
+import vrpro.vrpro.Model.ProfileSaleModel;
 import vrpro.vrpro.R;
 import vrpro.vrpro.adapter.ListEachOrderAdapter;
 import vrpro.vrpro.util.SQLiteEachOrderListUtil;
@@ -43,8 +45,9 @@ public class CreateOrderActivity extends AppCompatActivity {
     private String customerAdress;
     private String customerPhone;
     private String customerEmail;
-    private Double totalPrice;
     private String remarks;
+    private String discount;
+    private Double totalPrice;
 
     private TextView txtQuatationNo;
     private TextView txtQuatationDate;
@@ -54,10 +57,17 @@ public class CreateOrderActivity extends AppCompatActivity {
     private EditText txtCustomerPhone;
     private EditText txtCustomerEmail;
     private EditText txtRemarks;
+    private EditText txtDiscount;
+    private TextView txtTotalPrice;
 
+    private OrderModel orderModel;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
-
+    private String shared_quatationNo;
+    private String shared_quatationNoDefine;
+    private Integer shared_quatationRunningNoDefine;
+    private String shared_everCreareOrder;
+    private Integer runningQuataionNo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG,"CreateOrderActivity");
@@ -78,30 +88,17 @@ public class CreateOrderActivity extends AppCompatActivity {
         txtCustomerPhone = (EditText) findViewById(R.id.txtCustomerPhone);
         txtCustomerEmail = (EditText) findViewById(R.id.txtCustomerEmail);
         txtRemarks = (EditText) findViewById(R.id.txtRemarks);
+        txtDiscount = (EditText) findViewById(R.id.txtDiscount);
+        txtTotalPrice = (TextView) findViewById(R.id.txtTotalPrice);
+
+        shared_quatationNo = sharedPref.getString("quatationNo",null);
+        shared_quatationNoDefine = sharedPref.getString("quatationNoDefine",null);
+        shared_quatationRunningNoDefine = sharedPref.getInt("quatationRunningNoDefine",0);
+        shared_everCreareOrder = sharedPref.getString("everCreateOrder",null);
 
 
 
-
-        // getIntent() is a method from the started activity
-//        Intent myIntent = getIntent(); // gets the previously created intent
-//        quatationNo = myIntent.getStringExtra("quatationNo");
-
-        String shared_quatationNo = sharedPref.getString("quatationNo",null);
-        Log.i(LOG_TAG,"quatationNo : " + shared_quatationNo);
-
-        if(shared_quatationNo.equals("CREATE NEW ORDER")){
-            Log.i(LOG_TAG,"Create New Order");
-            txtQuatationNo.setText("xx#x-VRxxxx");
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            String currentDate = sdf.format(new Date());
-            txtQuatationDate.setText(currentDate);
-            editor = sharedPref.edit();
-            editor.putString("quatationNo", "60#0-VR1043");
-            editor.commit();
-        }else {
-            Log.i(LOG_TAG, "Open Order Quatation No : " + shared_quatationNo);
-            getDataToListView("60#0-VR1043");
-        }
+        initialData();
 
         Button summaryPriceBtn = (Button) findViewById(R.id.summaryPrice);
         summaryPriceBtn.setOnClickListener( new View.OnClickListener() {
@@ -118,31 +115,138 @@ public class CreateOrderActivity extends AppCompatActivity {
                 if(isInputsEmpty()){
                     Toast.makeText(CreateOrderActivity.this, "กรอกข้อมูลให้ครบทุกช่อง", Toast.LENGTH_SHORT).show();
                 }else{
-                    Log.i(LOG_TAG,"SaveOrder");
-                    quatationNo = txtQuatationNo.getText().toString();
-                    quatationDate =  txtQuatationDate.getText().toString();
-                    projectName = txtProjectName.getText().toString();
-                    customerName = txtCustomerName.getText().toString();
-                    customerAdress = txtCustomerAdress.getText().toString();
-                    customerPhone = txtCustomerPhone.getText().toString();
-                    customerEmail = txtCustomerEmail.getText().toString();
-                    totalPrice = 0.0;
-                    remarks = txtRemarks.getText().toString();
-                    Log.i(LOG_TAG,"quatationNo : " + quatationNo);
-                    Log.i(LOG_TAG,"quatationDate : " + quatationDate);
-                    Log.i(LOG_TAG,"projectName : " + projectName);
-                    Log.i(LOG_TAG,"customerName : " + customerName);
-                    Log.i(LOG_TAG,"customerAdress : " + customerAdress);
-                    Log.i(LOG_TAG,"customerPhone : " + customerPhone);
-                    Log.i(LOG_TAG,"customerEmail : " + customerEmail);
-                    Log.i(LOG_TAG,"totalPrice : " + totalPrice);
-                    Log.i(LOG_TAG,"remarks : " + remarks);
+                    sqlLite = new SQLiteUtil(CreateOrderActivity.this);
+                    orderModel = new OrderModel();
+                    orderModel = sqlLite.getOrderByQuatationNo(shared_quatationNo);
+                    if(orderModel.getQuatationNo() != null){
+                        Log.i(LOG_TAG,"Update Order");
+                    }else{
+                        Log.i(LOG_TAG,"Save Order");
+                        saveOrderToDB();
+                        setQuatationNoDefineToSharedPref();
+                        setEverCreateOrderToSharedPref();
+                    }
+
                 }
-
-
             }
         });
 
+    }
+
+    private void initialData(){
+
+        Log.i(LOG_TAG,"shared_quatationNo : " + shared_quatationNo);
+        Log.i(LOG_TAG,"shared_quatationNoDefine : " + shared_quatationNoDefine);
+        Log.i(LOG_TAG,"shared_quatationRunningNoDefine : " + shared_quatationRunningNoDefine);
+        Log.i(LOG_TAG,"shared_everCreateOrder : " + shared_everCreareOrder);
+        if(shared_quatationNo.equals("CREATE NEW ORDER")){
+            Log.i(LOG_TAG,"Create New Order");
+            sqlLite = new SQLiteUtil(this);
+            ProfileSaleModel profileSaleModelFromDB = sqlLite.getProfileSale();
+            Log.i(LOG_TAG,">> getQuatationRunningNo" + profileSaleModelFromDB.getQuatationRunningNo());
+            if(shared_everCreareOrder == null){
+                Log.i(LOG_TAG,"First Order Of Sale");
+                runningQuataionNo = shared_quatationRunningNoDefine;
+                txtQuatationNo.setText(shared_quatationNoDefine+shared_quatationRunningNoDefine);
+            }else {
+                Log.i(LOG_TAG, "Not First Order Of Sale");
+//                int runningQuatationNo = Integer.parseInt(shared_quatationNoDefine.substring(shared_quatationNoDefine.length() - 4, shared_quatationNoDefine.length()));
+//                runningQuatationNo += 1;
+//                String showQautationNo = shared_quatationNoDefine.substring(0, shared_quatationNoDefine.length() - 4) + String.valueOf(runningQuatationNo);
+//                Log.i(LOG_TAG, "showQautationNo : " + showQautationNo);
+//                txtQuatationNo.setText(showQautationNo);
+                runningQuataionNo = shared_quatationRunningNoDefine + 1;
+                String showQautationNo = shared_quatationNoDefine + String.valueOf(runningQuataionNo);
+
+                Log.i(LOG_TAG, "showQautationNo : " + showQautationNo);
+                txtQuatationNo.setText(showQautationNo);
+            }
+//            }
+
+//            int runningQuatationNo = shared_quatationRunningNoDefine + 1;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            String currentDate = sdf.format(new Date());
+            txtQuatationDate.setText(currentDate);
+            setQuatationNoToSharedPref();
+
+        }else {
+            Log.i(LOG_TAG, "Open Order Quatation No : " + shared_quatationNo);
+            sqlLite = new SQLiteUtil(CreateOrderActivity.this);
+            orderModel = new OrderModel();
+            orderModel = sqlLite.getOrderByQuatationNo(shared_quatationNo);
+
+            txtQuatationNo.setText(orderModel.getQuatationNo());
+            txtQuatationDate.setText(orderModel.getQuatationDate());
+            txtProjectName.setText(orderModel.getProjectName());
+            txtCustomerName.setText(orderModel.getCustomerName());
+            txtCustomerAdress.setText(orderModel.getCustomerAdress());
+            txtCustomerPhone.setText(orderModel.getCustomerPhone());
+            txtCustomerEmail.setText(orderModel.getCustomerEmail());
+            txtRemarks.setText(orderModel.getRemarks());
+            txtDiscount.setText(String.valueOf(orderModel.getDiscount()));
+            txtTotalPrice.setText(String.valueOf(orderModel.getTotalPrice()));
+            getDataToListView(shared_quatationNo);
+        }
+    }
+
+    private void setQuatationNoToSharedPref() {
+        editor = sharedPref.edit();
+        editor.putString("quatationNo", txtQuatationNo.getText().toString());
+        editor.commit();
+    }
+
+    private void setQuatationNoDefineToSharedPref() {
+        editor = sharedPref.edit();
+        editor.putString("quatationNoDefine", shared_quatationNoDefine);
+        editor.putInt("quatationRunningNoDefine",runningQuataionNo);
+        editor.commit();
+    }
+
+    private void setEverCreateOrderToSharedPref() {
+        editor = sharedPref.edit();
+        editor.putString("everCreateOrder", "Not First Order Of Sale");
+        editor.commit();
+    }
+
+    private void saveOrderToDB() {
+        quatationNo = txtQuatationNo.getText().toString();
+        quatationDate =  txtQuatationDate.getText().toString();
+        projectName = txtProjectName.getText().toString();
+        customerName = txtCustomerName.getText().toString();
+        customerAdress = txtCustomerAdress.getText().toString();
+        customerPhone = txtCustomerPhone.getText().toString();
+        customerEmail = txtCustomerEmail.getText().toString();
+
+        remarks = txtRemarks.getText().toString();
+        discount = txtDiscount.getText().toString();
+        totalPrice = Double.parseDouble(txtTotalPrice.getText().toString());
+
+        Log.i(LOG_TAG,"quatationNo : " + quatationNo);
+        Log.i(LOG_TAG,"quatationDate : " + quatationDate);
+        Log.i(LOG_TAG,"projectName : " + projectName);
+        Log.i(LOG_TAG,"customerName : " + customerName);
+        Log.i(LOG_TAG,"customerAdress : " + customerAdress);
+        Log.i(LOG_TAG,"customerPhone : " + customerPhone);
+        Log.i(LOG_TAG,"customerEmail : " + customerEmail);
+        Log.i(LOG_TAG,"remarks : " + remarks);
+        Log.i(LOG_TAG,"discount : " + discount);
+        Log.i(LOG_TAG,"totalPrice : " + totalPrice);
+
+        orderModel = new OrderModel();
+        orderModel.setQuatationNo(quatationNo);
+        orderModel.setQuatationDate(quatationDate);
+        orderModel.setProjectName(projectName);
+        orderModel.setCustomerName(customerName);
+        orderModel.setCustomerAdress(customerAdress);
+        orderModel.setCustomerPhone(customerPhone);
+        orderModel.setCustomerEmail(customerEmail);
+        orderModel.setRemarks(remarks);
+        orderModel.setDiscount(discount);
+        orderModel.setTotalPrice(totalPrice);
+
+        sqlLite = new SQLiteUtil(CreateOrderActivity.this);
+        sqlLite.setOrder(orderModel);
+        gotoHomeActivity();
     }
 
     @Override
@@ -205,5 +309,10 @@ public class CreateOrderActivity extends AppCompatActivity {
         this.startActivity(myIntent);
     }
 
-
+    private void gotoHomeActivity() {
+        Intent myIntent = new Intent(this, HomeActivity.class);
+        myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.startActivity(myIntent);
+        finish();
+    }
 }

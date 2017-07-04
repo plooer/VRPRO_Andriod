@@ -14,7 +14,8 @@ public class OrderModel {
     private String customerAdress;
     private String customerPhone;
     private String customerEmail;
-    private Double totalPricel;
+    private String discount;
+    private Double totalPrice;
     private String remarks;
 
     public Integer getID() {
@@ -81,12 +82,20 @@ public class OrderModel {
         this.customerEmail = customerEmail;
     }
 
-    public Double getTotalPricel() {
-        return totalPricel;
+    public String getDiscount() {
+        return discount;
     }
 
-    public void setTotalPricel(Double totalPricel) {
-        this.totalPricel = totalPricel;
+    public void setDiscount(String discount) {
+        this.discount = discount;
+    }
+
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     public String getRemarks() {

@@ -64,7 +64,12 @@ public class ListEachOrderAdapter extends BaseAdapter{
         holder.txtPositon.setText(eachOrderModel.getPosition());
         holder.txtDW.setText(eachOrderModel.getDw());
         holder.txtTypeOfM.setText(eachOrderModel.getTypeOfM());
-        holder.txtSpecialWord.setText(eachOrderModel.getSpecialWord() + " + " + eachOrderModel.getSpecialReq());
+        if(eachOrderModel.getSpecialWord().equals("")){
+            holder.txtSpecialWord.setText("# / " + eachOrderModel.getSpecialReq().toString().replace("[", "").replace("]", ""));
+        }else{
+            holder.txtSpecialWord.setText(eachOrderModel.getSpecialWord() + " / " + eachOrderModel.getSpecialReq().toString().replace("[", "").replace("]", ""));
+        }
+
         holder.txtTotalPrices.setText(String.valueOf(eachOrderModel.getTotolPrice()));
 
 //        holder.txtFloor.setText("1");

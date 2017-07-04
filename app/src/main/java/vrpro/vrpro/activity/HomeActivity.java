@@ -14,7 +14,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import io.fabric.sdk.android.Fabric;
+import vrpro.vrpro.Model.OrderModel;
 import vrpro.vrpro.R;
 import vrpro.vrpro.adapter.ListOrderAdapter;
 import vrpro.vrpro.util.SQLiteUtil;
@@ -26,20 +34,27 @@ public class HomeActivity extends AppCompatActivity {
     private Toolbar mActionBarToolbar;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
+    private SQLiteUtil sqlLite;
+    List<OrderModel> orderModelList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        Fabric.with(this, new Crashlytics());
+
+
         mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mActionBarToolbar);
         getSupportActionBar().setTitle("VRPRO");
 
+
         sharedPref = this.getSharedPreferences(getString(R.string.preference_key), Context.MODE_PRIVATE);
 
+        sqlLite = new SQLiteUtil(this);
+        orderModelList = sqlLite.getOrderList();
         listOrderListView = (ListView) findViewById(R.id.listViewOrder);
-
-        ListOrderAdapter listOrderAdapter = new ListOrderAdapter(this, "test");
+        ListOrderAdapter listOrderAdapter = new ListOrderAdapter(this, orderModelList);
         listOrderListView.setAdapter(listOrderAdapter);
         listOrderListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -85,19 +100,23 @@ public class HomeActivity extends AppCompatActivity {
 
     private void gotoCreateOrderActivity(String position) {
         Log.i(LOG_TAG,"gotoCreateOrderActivity >>>. " + position );
-        Intent myIntent = new Intent(HomeActivity.this, CreateOrderActivity.class);
-        editor = sharedPref.edit();
-        if(position.equals("CREATE NEW ORDER")){
-//            myIntent.putExtra("quatationNo","CREATE NEW ORDER");
-            editor.putString("quatationNo", "CREATE NEW ORDER");
+        String shared_quatationNoDefine = sharedPref.getString("quatationNoDefine",null);
+        if(shared_quatationNoDefine == null){
+            Toast.makeText(this, "Please set quatation number before create new order.", Toast.LENGTH_SHORT).show();
         }else{
-//            myIntent.putExtra("quatationNo","60#0-VR1043");
-            editor.putString("quatationNo", "60#0-VR1043");
+            Intent myIntent = new Intent(HomeActivity.this, CreateOrderActivity.class);
+            editor = sharedPref.edit();
+            if(position.equals("CREATE NEW ORDER")){
+                editor.putString("quatationNo", "CREATE NEW ORDER");
+            }else{
+                editor.putString("quatationNo",orderModelList.get(Integer.parseInt(position)).getQuatationNo());
+            }
+
+            editor.commit();
+//      data.putString("_id", topicModelList.get(position).get("_id").toString());
+            startActivity(myIntent);
         }
 
-        editor.commit();
-//      data.putString("_id", topicModelList.get(position).get("_id").toString());
-        startActivity(myIntent);
     }
 
 

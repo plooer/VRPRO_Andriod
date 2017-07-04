@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import vrpro.vrpro.Model.EachOrderModel;
+import vrpro.vrpro.Model.OrderModel;
 import vrpro.vrpro.R;
 import vrpro.vrpro.util.OnDataPass;
 
@@ -27,21 +29,21 @@ public class ListOrderAdapter extends BaseAdapter {
     private final String LOG_TAG = "ListOrderAdapter";
 
     private Context context;
-    private String avatarName;
+    List<OrderModel> orderModelList;
 
-    public ListOrderAdapter (Context context, String avatarName) {
+    public ListOrderAdapter (Context context, List<OrderModel> orderModelList) {
         this.context = context;
-        this.avatarName = avatarName;
+        this.orderModelList = orderModelList;
     }
 
     @Override
     public int getCount() {
-        return 1;
+        return orderModelList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return this.avatarName;
+        return orderModelList.get(position);
     }
 
     @Override
@@ -52,21 +54,28 @@ public class ListOrderAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater layoutInflater = LayoutInflater.from(context);
-        ViewHolder holder = null;
+        final OrderModel orderModel = (OrderModel) getItem(position);
+        ListOrderAdapter.ViewHolder holder = null;
         if(convertView == null)
             convertView = layoutInflater.inflate(R.layout.order_row, null);
-        holder = new ViewHolder();
+        holder = new ListOrderAdapter.ViewHolder();
         holder.txtQuatationDate = (TextView) convertView.findViewById(R.id.quatationDate);
         holder.txtQuatationNo = (TextView) convertView.findViewById(R.id.quatationNo);
         holder.txtProjectName = (TextView) convertView.findViewById(R.id.projectName);
         holder.txtCustomerName = (TextView) convertView.findViewById(R.id.customerName);
         holder.txtTotalPrice = (TextView) convertView.findViewById(R.id.totalPrice);
 
-        holder.txtQuatationDate.setText("24/06/2017");
-        holder.txtQuatationNo.setText("60#0-VR1043");
-        holder.txtProjectName.setText("ม.คาซ่า ศิตี้ ดอนเมือง ศรีสมาน");
-        holder.txtCustomerName.setText("จิราภัสร์ จิรเดชวิโรจน์");
-        holder.txtTotalPrice.setText("10,000 บาท");
+        holder.txtQuatationDate.setText(orderModel.getQuatationDate());
+        holder.txtQuatationNo.setText(orderModel.getQuatationNo());
+        holder.txtProjectName.setText(orderModel.getProjectName());
+        holder.txtCustomerName.setText(orderModel.getCustomerName());
+        holder.txtTotalPrice.setText(String.valueOf(orderModel.getTotalPrice()));
+
+//        holder.txtQuatationDate.setText("24/06/2017");
+//        holder.txtQuatationNo.setText("60#0-VR1043");
+//        holder.txtProjectName.setText("ม.คาซ่า ศิตี้ ดอนเมือง ศรีสมาน");
+//        holder.txtCustomerName.setText("จิราภัสร์ จิรเดชวิโรจน์");
+//        holder.txtTotalPrice.setText("10,000 บาท");
 
         return convertView;
     }

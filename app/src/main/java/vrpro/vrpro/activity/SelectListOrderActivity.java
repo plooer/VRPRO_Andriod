@@ -21,6 +21,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import vrpro.vrpro.Model.EachOrderModel;
 import vrpro.vrpro.R;
 import vrpro.vrpro.util.SQLiteUtil;
@@ -44,11 +46,11 @@ public class SelectListOrderActivity extends AppCompatActivity {
     private Integer sizeOfspecialReq;
     private Double totalPrice;
     private String quatationNo;
+    private String shared_quatationNo;
     EditText txtWidth;
     EditText txtHeight;
     private SQLiteUtil sqlLite;
     private SharedPreferences sharedPref;
-    private SharedPreferences.Editor editor;
 
 
     @Override
@@ -61,8 +63,8 @@ public class SelectListOrderActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("รายการ");
 
         sharedPref = this.getSharedPreferences("vrpro.vrpro", Context.MODE_PRIVATE);
-        quatationNo = sharedPref.getString("quatationNo",null);
-        Log.i(LOG_TAG,"quatationoNo : " + quatationNo);
+        shared_quatationNo = sharedPref.getString("quatationNo",null);
+        Log.i(LOG_TAG,"shared_quatationNo : " + shared_quatationNo);
 
         txtWidth = (EditText) findViewById(R.id.txtWidthEachOrder);
         txtHeight = (EditText) findViewById(R.id.txtHeightEachOrder);
@@ -70,6 +72,7 @@ public class SelectListOrderActivity extends AppCompatActivity {
         // getIntent() is a method from the started activity
 //        Intent myIntent = getIntent(); // gets the previously created intent
 //        quatationNo = myIntent.getStringExtra("quatationNo");
+
 
         setFloorSpinner();
         setPositionSpinner();
@@ -129,7 +132,7 @@ public class SelectListOrderActivity extends AppCompatActivity {
 
     private void insertEachOrderListToDB() {
         EachOrderModel eachOrderModel = new EachOrderModel();
-        eachOrderModel.setQuatationNo("60#0-VR1043");
+        eachOrderModel.setQuatationNo(shared_quatationNo);
         eachOrderModel.setFloor(floor);
         eachOrderModel.setPosition(position);
         eachOrderModel.setDw(DW);
@@ -163,8 +166,6 @@ public class SelectListOrderActivity extends AppCompatActivity {
             specialOrderLinear.addView(specialCheckbox);
             i++;
         }
-
-
     }
 
     private void setSpecialSpinnerCase(String[] specialItems) {
@@ -186,7 +187,8 @@ public class SelectListOrderActivity extends AppCompatActivity {
 
     private void setTypeOfMSpinner() {
         Spinner typeOfMDropdown = (Spinner)findViewById(R.id.spinnerTypeOfM);
-        String[] typeOfMItems = new String[]{"ประเภทมุ้ง","มุ้งกรอบเหล็กเปิด", "มุ้งกรอบเหล็กเลื่อน", "มุ้งประตูเปิด","มุ้งเลื่อน","มุ้งเปิด","มุ้ง Fix","มุ้งจีบพับเก็บ"};
+        String[] typeOfMItems = getResources().getStringArray(R.array.type_of_m_array);
+//        String[] typeOfMItems = new String[]{"ประเภทมุ้ง","มุ้งกรอบเหล็กเปิด", "มุ้งกรอบเหล็กเลื่อน", "มุ้งประตูเปิด","มุ้งเลื่อน","มุ้งเปิด","มุ้ง Fix","มุ้งจีบพับเก็บ"};
         ArrayAdapter<String> typeOfMAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, typeOfMItems);
         typeOfMDropdown.setAdapter(typeOfMAdapter);
         typeOfMDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -199,69 +201,81 @@ public class SelectListOrderActivity extends AppCompatActivity {
                 specialWord = "";
                 Log.i(LOG_TAG,"TypeOfM >>>>> position : " + posTypeOfM + " item : " + typeOfM);
                 if(typeOfM.equals("มุ้งกรอบเหล็กเปิด")){
-                    specialItems = new String[]{"สี","สีขาว", "สีดำ", "สีน้ำตาล"};
+                    specialItems = getResources().getStringArray(R.array.color_mung_array);
+//                    specialItems = new String[]{"สี","สีขาว", "สีดำ", "สีน้ำตาล"};
                     setSpecialSpinnerCase(specialItems);
-                    groupSpeacial.add("กลับทาง");
-                    groupSpeacial.add("ขอสับ");
-                    groupSpeacial.add("Door Closer");
-                    groupSpeacial.add("อะคริลิคใส(0.65 ม.)");
-                    groupSpeacial.add("อะคริลิคใส(1.00 ม.)");
-                    groupSpeacial.add("อะคริลิคใส(เต็มบาน)");
-                    groupSpeacial.add("Door fot Pets");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_krob_lek_perd_array)));
+//                    groupSpeacial.add("กลับทาง");
+//                    groupSpeacial.add("ขอสับ");
+//                    groupSpeacial.add("Door Closer");
+//                    groupSpeacial.add("อะคริลิคใส(0.65 ม.)");
+//                    groupSpeacial.add("อะคริลิคใส(1.00 ม.)");
+//                    groupSpeacial.add("อะคริลิคใส(เต็มบาน)");
+//                    groupSpeacial.add("Door for Pets");
                 }else if(typeOfM.equals("มุ้งกรอบเหล็กเลื่อน")){
-                    specialItems = new String[]{"สี","สีขาว", "สีดำ", "สีน้ำตาล"};
+                    specialItems = getResources().getStringArray(R.array.color_mung_array);
+//                    specialItems = new String[]{"สี","สีขาว", "สีดำ", "สีน้ำตาล"};
                     setSpecialSpinnerCase(specialItems);
-                    groupSpeacial.add("กลับทาง");
-                    groupSpeacial.add("มือจับฝัง");
-                    groupSpeacial.add("ขอสับ");
-                    groupSpeacial.add("อะคริลิคใส(0.65 ม.)");
-                    groupSpeacial.add("อะคริลิคใส(1.00 ม.)");
-                    groupSpeacial.add("อะคริลิคใส(เต็มบาน)");
-                    groupSpeacial.add("Door fot Pets");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_krob_lek_leuan_array)));
+//                    groupSpeacial.add("กลับทาง");
+//                    groupSpeacial.add("มือจับฝัง");
+//                    groupSpeacial.add("ขอสับ");
+//                    groupSpeacial.add("อะคริลิคใส(0.65 ม.)");
+//                    groupSpeacial.add("อะคริลิคใส(1.00 ม.)");
+//                    groupSpeacial.add("อะคริลิคใส(เต็มบาน)");
+//                    groupSpeacial.add("Door for Pets");
                 }else if(typeOfM.equals("มุ้งประตูเปิด")){
                     setSpecialDropdownInvisible();
-                    groupSpeacial.add("กลับทาง");
-                    groupSpeacial.add("เพิ่มกรอบ");
-                    groupSpeacial.add("ขอสับ");
-                    groupSpeacial.add("Door fot Pets");
-                    groupSpeacial.add("Pets Screen(0.65 ม.)");
-                    groupSpeacial.add("Pets Screen(1.00 ม.)");
-                    groupSpeacial.add("Pets Screen(เต็มบาน)");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_pratoo_perd_array)));
+//                    groupSpeacial.add("กลับทาง");
+//                    groupSpeacial.add("เพิ่มกรอบ");
+//                    groupSpeacial.add("ขอสับ");
+//                    groupSpeacial.add("Door for Pets");
+//                    groupSpeacial.add("Pets Screen(0.65 ม.)");
+//                    groupSpeacial.add("Pets Screen(1.00 ม.)");
+//                    groupSpeacial.add("Pets Screen(เต็มบาน)");
                 }else if(typeOfM.equals("มุ้งเลื่อน")){
-                    specialItems = new String[]{"รูปแบบพิเศษ","A", "S", "SA"};
+                    specialItems = getResources().getStringArray(R.array.special_mung_leuan_array);
+//                    specialItems = new String[]{"รูปแบบพิเศษ","A", "S", "SA"};
                     setSpecialSpinnerCase(specialItems);
-                    groupSpeacial.add("กลับทาง");
-                    groupSpeacial.add("เพิ่มราง");
-                    groupSpeacial.add("เพิ่มกรอบ");
-                    groupSpeacial.add("ขอสับ");
-                    groupSpeacial.add("Door fot Pets");
-                    groupSpeacial.add("Pets Screen(0.65 ม.)");
-                    groupSpeacial.add("Pets Screen(1.00 ม.)");
-                    groupSpeacial.add("Pets Screen(เต็มบาน)");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_leuan_array)));
+//                    groupSpeacial.add("กลับทาง");
+//                    groupSpeacial.add("เพิ่มราง");
+//                    groupSpeacial.add("เพิ่มกรอบ");
+//                    groupSpeacial.add("ขอสับ");
+//                    groupSpeacial.add("Door for Pets");
+//                    groupSpeacial.add("Pets Screen(0.65 ม.)");
+//                    groupSpeacial.add("Pets Screen(1.00 ม.)");
+//                    groupSpeacial.add("Pets Screen(เต็มบาน)");
                 }else if(typeOfM.equals("มุ้งเปิด")){
                     setSpecialDropdownInvisible();
-                    groupSpeacial.add("กลับทาง");
-                    groupSpeacial.add("เพิ่มกรอบ");
-                    groupSpeacial.add("บานเกร็ด");
-                    groupSpeacial.add("ขอสับ");
-                    groupSpeacial.add("Door fot Pets");
-                    groupSpeacial.add("Pets Screen(0.65 ม.)");
-                    groupSpeacial.add("Pets Screen(1.00 ม.)");
-                    groupSpeacial.add("Pets Screen(เต็มบาน)");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_perd_array)));
+//                    groupSpeacial.add("กลับทาง");
+//                    groupSpeacial.add("เพิ่มกรอบ");
+//                    groupSpeacial.add("บานเกร็ด");
+//                    groupSpeacial.add("ขอสับ");
+//                    groupSpeacial.add("Door for Pets");
+//                    groupSpeacial.add("Pets Screen(0.65 ม.)");
+//                    groupSpeacial.add("Pets Screen(1.00 ม.)");
+//                    groupSpeacial.add("Pets Screen(เต็มบาน)");
                 }else if(typeOfM.equals("มุ้ง Fix")){
-                    specialItems = new String[]{"รูปแบบพิเศษ","ลูกบิด", "แม่เหล็ก"};
+//                    specialItems = new String[]{"รูปแบบพิเศษ","ลูกบิด", "แม่เหล็ก"};
+                    specialItems = getResources().getStringArray(R.array.special_mung_fix_array);
                     setSpecialSpinnerCase(specialItems);
-                    groupSpeacial.add("กลับทาง");
-                    groupSpeacial.add("เพิ่มกรอบ");
-                    groupSpeacial.add("บานเกร็ด");
-                    groupSpeacial.add("Door fot Pets");
-                    groupSpeacial.add("Pets Screen(0.65 ม.)");
-                    groupSpeacial.add("Pets Screen(1.00 ม.)");
-                    groupSpeacial.add("Pets Screen(เต็มบาน)");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_fix_array)));
+//                    groupSpeacial.add("กลับทาง");
+//                    groupSpeacial.add("เพิ่มกรอบ");
+//                    groupSpeacial.add("บานเกร็ด");
+//                    groupSpeacial.add("Door for Pets");
+//                    groupSpeacial.add("Pets Screen(0.65 ม.)");
+//                    groupSpeacial.add("Pets Screen(1.00 ม.)");
+//                    groupSpeacial.add("Pets Screen(เต็มบาน)");
                 }else if(typeOfM.equals("มุ้งจีบพับเก็บ")){
-                    specialItems = new String[]{"รูปแบบพิเศษ","รางเตี้ย", "เก็บราง"};
+//                    specialItems = new String[]{"รูปแบบพิเศษ","รางเตี้ย", "เก็บราง"};
+                    specialItems = getResources().getStringArray(R.array.special_mung_pub_array);
                     setSpecialSpinnerCase(specialItems);
-                    groupSpeacial.add("กลับทาง");
+                    groupSpeacial.addAll(Arrays.asList(getResources().getStringArray(R.array.special_req_of_mung_pub_array)));
+//                    groupSpeacial.add("กลับทาง");
                 }
                     setSelectedButtonSpecial(groupSpeacial);
             }
@@ -277,7 +291,8 @@ public class SelectListOrderActivity extends AppCompatActivity {
 
     private void setDWSpinner() {
         Spinner DWDropdown = (Spinner)findViewById(R.id.spinnerDW);
-        String[] DWItems = new String[]{"ประเภท","ประตู","หน้าต่าง"};
+        String[] DWItems = getResources().getStringArray(R.array.dw_array);
+//        String[] DWItems = new String[]{"ประเภท","ประตู","หน้าต่าง"};
         ArrayAdapter<String> DWAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, DWItems);
         DWDropdown.setAdapter(DWAdapter);
         DWDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -295,7 +310,8 @@ public class SelectListOrderActivity extends AppCompatActivity {
 
     private void setPositionSpinner() {
         Spinner positionDropdown = (Spinner)findViewById(R.id.spinnerPosition);
-        String[] positionItems = new String[]{"ตำแหน่ง","รับแขก","นอนล่าง","โรงรถ","น้ำล่าง","ครัว","บันได","นอนใหญ่","น้ำนอนใหญ่","นอนหน้า","น้ำนอนหน้า","นอนหลังซ้าย","น้ำนอนหลังซ้าย","นอนหน้าซ้าย","น้ำนอนหน้าซ้าย","นอนหน้าขวา","น้ำนอนหน้าขวา","นอนหลังขวา","น้ำนอนหลังขวา","นอนกลาง","น้ำนอนกลาง","โถงกลาง","น้ำบน"};
+        String[] positionItems = getResources().getStringArray(R.array.position_array);
+//        String[] positionItems = new String[]{"ตำแหน่ง","รับแขก","นอนล่าง","โรงรถ","น้ำล่าง","ครัว","บันได","นอนใหญ่","น้ำนอนใหญ่","นอนหน้า","น้ำนอนหน้า","นอนหลังซ้าย","น้ำนอนหลังซ้าย","นอนหน้าซ้าย","น้ำนอนหน้าซ้าย","นอนหน้าขวา","น้ำนอนหน้าขวา","นอนหลังขวา","น้ำนอนหลังขวา","นอนกลาง","น้ำนอนกลาง","โถงกลาง","น้ำบน"};
         ArrayAdapter<String> postionAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, positionItems);
         positionDropdown.setAdapter(postionAdapter);
         positionDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -312,7 +328,9 @@ public class SelectListOrderActivity extends AppCompatActivity {
 
     private void setFloorSpinner() {
         Spinner floorDropdown = (Spinner)findViewById(R.id.spinnerFloor);
-        String[] floorItems = new String[]{"ชั้น","1", "2", "3","4","5"};
+
+//        String[] floorItems = new String[]{"ชั้น","1", "2", "3","4","5"};
+        String[] floorItems = getResources().getStringArray(R.array.floor_array);
         ArrayAdapter<String> floorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, floorItems);
         floorDropdown.setAdapter(floorAdapter);
         floorDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -337,7 +355,6 @@ public class SelectListOrderActivity extends AppCompatActivity {
     private void gotoCreateOrderActivity() {
         Intent myIntent = new Intent(this, CreateOrderActivity.class);
         myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-//        myIntent.putExtra("quatationNo",quatationNo);
         this.startActivity(myIntent);
         finish();
     }
