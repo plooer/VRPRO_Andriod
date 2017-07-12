@@ -1,8 +1,12 @@
 package vrpro.vrpro.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Rect;
+import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -13,6 +17,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -61,13 +66,17 @@ public class CreateOrderActivity extends AppCompatActivity {
     private TextView txtTotalPrice;
 
     private OrderModel orderModel;
+    private OrderModel orderModelFromDB;
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
     private String shared_quatationNo;
     private String shared_quatationNoDefine;
     private Integer shared_quatationRunningNoDefine;
     private String shared_everCreareOrder;
+    private String shared_discount;
     private Integer runningQuataionNo;
+    List<EachOrderModel> eachOrderModelList;
+//    private Double realTotalPrice;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_TAG,"CreateOrderActivity");
@@ -97,8 +106,33 @@ public class CreateOrderActivity extends AppCompatActivity {
         shared_everCreareOrder = sharedPref.getString("everCreateOrder",null);
 
 
+        txtDiscount.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus){
+                    double tempTotalPrice;
+                    if(isEmpty(txtDiscount)){
+                        tempTotalPrice = orderModelFromDB.getRealTotalPrice() - 0;
+                    }else{
+                        tempTotalPrice = orderModelFromDB.getRealTotalPrice() - Double.parseDouble(txtDiscount.getText().toString());
+                    }
 
-        initialData();
+                    Log.i(LOG_TAG,"realTotalPrice : " + orderModelFromDB.getRealTotalPrice());
+                    Log.i(LOG_TAG,"textDiscount : " + txtDiscount.getText().toString());
+                    Log.i(LOG_TAG,"tempPrice : " + tempTotalPrice);
+//                    setDiscountToSharedPref();
+                    if(tempTotalPrice>=0){
+                        txtTotalPrice.setText(String.valueOf(tempTotalPrice));
+                    }else{
+                        txtTotalPrice.setText("0.0");
+                    }
+
+                }
+            }
+        });
+
+
+//        initialData();
 
         Button summaryPriceBtn = (Button) findViewById(R.id.summaryPrice);
         summaryPriceBtn.setOnClickListener( new View.OnClickListener() {
@@ -115,26 +149,67 @@ public class CreateOrderActivity extends AppCompatActivity {
                 if(isInputsEmpty()){
                     Toast.makeText(CreateOrderActivity.this, "กรอกข้อมูลให้ครบทุกช่อง", Toast.LENGTH_SHORT).show();
                 }else{
-                    sqlLite = new SQLiteUtil(CreateOrderActivity.this);
-                    orderModel = new OrderModel();
-                    orderModel = sqlLite.getOrderByQuatationNo(shared_quatationNo);
-                    if(orderModel.getQuatationNo() != null){
+
+                    if(orderModelFromDB.getQuatationNo() != null){
                         Log.i(LOG_TAG,"Update Order");
+                        totalPrice = Double.parseDouble(txtTotalPrice.getText().toString());
+                        updateOrderModelToDB(totalPrice,orderModelFromDB.getRealTotalPrice());
+                        gotoHomeActivity();
+
                     }else{
                         Log.i(LOG_TAG,"Save Order");
                         saveOrderToDB();
                         setQuatationNoDefineToSharedPref();
                         setEverCreateOrderToSharedPref();
+                        gotoHomeActivity();
                     }
-
                 }
             }
         });
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        sqlLite = new SQLiteUtil(CreateOrderActivity.this);
+        orderModelFromDB = new OrderModel();
+        orderModelFromDB = sqlLite.getOrderByQuatationNo(shared_quatationNo);
+        initialData();
+    }
+
+
+    private void updateOrderModelToDB(Double totalPrice,Double realTotalPrice) {
+        Log.i(LOG_TAG,"updateOrderModelToDB");
+        Log.i(LOG_TAG,"quatationNo : " +  txtQuatationNo.getText().toString());
+        Log.i(LOG_TAG,"quatationDate : " + txtQuatationDate.getText().toString());
+        Log.i(LOG_TAG,"projectName : " + txtProjectName.getText().toString());
+        Log.i(LOG_TAG,"customerName : " + txtCustomerName.getText().toString());
+        Log.i(LOG_TAG,"customerAdress : " + txtCustomerAdress.getText().toString());
+        Log.i(LOG_TAG,"customerPhone : " + txtCustomerPhone.getText().toString());
+        Log.i(LOG_TAG,"customerEmail : " + txtCustomerEmail.getText().toString());
+        Log.i(LOG_TAG,"remarks : " + txtRemarks.getText().toString());
+        Log.i(LOG_TAG,"discount : " + txtDiscount.getText().toString());
+        Log.i(LOG_TAG,"totalPrice : " + totalPrice);
+        Log.i(LOG_TAG,"realTotalPrice : " + realTotalPrice);
+
+        orderModel = new OrderModel();
+        orderModel.setID(orderModelFromDB.getID());
+        orderModel.setQuatationNo( txtQuatationNo.getText().toString());
+        orderModel.setQuatationDate(txtQuatationDate.getText().toString());
+        orderModel.setProjectName(txtProjectName.getText().toString());
+        orderModel.setCustomerName(txtCustomerName.getText().toString());
+        orderModel.setCustomerAdress(txtCustomerAdress.getText().toString());
+        orderModel.setCustomerPhone(txtCustomerPhone.getText().toString());
+        orderModel.setCustomerEmail(txtCustomerEmail.getText().toString());
+        orderModel.setRemarks(txtRemarks.getText().toString());
+        orderModel.setDiscount(txtDiscount.getText().toString());
+        orderModel.setTotalPrice(totalPrice);
+        orderModel.setRealTotalPrice(realTotalPrice);
+        sqlLite = new SQLiteUtil(CreateOrderActivity.this);
+        sqlLite.updateOrder(orderModel);
     }
 
     private void initialData(){
-
         Log.i(LOG_TAG,"shared_quatationNo : " + shared_quatationNo);
         Log.i(LOG_TAG,"shared_quatationNoDefine : " + shared_quatationNoDefine);
         Log.i(LOG_TAG,"shared_quatationRunningNoDefine : " + shared_quatationRunningNoDefine);
@@ -148,22 +223,16 @@ public class CreateOrderActivity extends AppCompatActivity {
                 Log.i(LOG_TAG,"First Order Of Sale");
                 runningQuataionNo = shared_quatationRunningNoDefine;
                 txtQuatationNo.setText(shared_quatationNoDefine+shared_quatationRunningNoDefine);
+                txtTotalPrice.setText("0.0");
             }else {
                 Log.i(LOG_TAG, "Not First Order Of Sale");
-//                int runningQuatationNo = Integer.parseInt(shared_quatationNoDefine.substring(shared_quatationNoDefine.length() - 4, shared_quatationNoDefine.length()));
-//                runningQuatationNo += 1;
-//                String showQautationNo = shared_quatationNoDefine.substring(0, shared_quatationNoDefine.length() - 4) + String.valueOf(runningQuatationNo);
-//                Log.i(LOG_TAG, "showQautationNo : " + showQautationNo);
-//                txtQuatationNo.setText(showQautationNo);
                 runningQuataionNo = shared_quatationRunningNoDefine + 1;
                 String showQautationNo = shared_quatationNoDefine + String.valueOf(runningQuataionNo);
 
                 Log.i(LOG_TAG, "showQautationNo : " + showQautationNo);
                 txtQuatationNo.setText(showQautationNo);
+                txtTotalPrice.setText("0.0");
             }
-//            }
-
-//            int runningQuatationNo = shared_quatationRunningNoDefine + 1;
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             String currentDate = sdf.format(new Date());
             txtQuatationDate.setText(currentDate);
@@ -172,19 +241,20 @@ public class CreateOrderActivity extends AppCompatActivity {
         }else {
             Log.i(LOG_TAG, "Open Order Quatation No : " + shared_quatationNo);
             sqlLite = new SQLiteUtil(CreateOrderActivity.this);
-            orderModel = new OrderModel();
-            orderModel = sqlLite.getOrderByQuatationNo(shared_quatationNo);
+            Log.i(LOG_TAG, "orderModelFromDB.getRemarks() : " + orderModelFromDB.getRemarks());
 
-            txtQuatationNo.setText(orderModel.getQuatationNo());
-            txtQuatationDate.setText(orderModel.getQuatationDate());
-            txtProjectName.setText(orderModel.getProjectName());
-            txtCustomerName.setText(orderModel.getCustomerName());
-            txtCustomerAdress.setText(orderModel.getCustomerAdress());
-            txtCustomerPhone.setText(orderModel.getCustomerPhone());
-            txtCustomerEmail.setText(orderModel.getCustomerEmail());
-            txtRemarks.setText(orderModel.getRemarks());
-            txtDiscount.setText(String.valueOf(orderModel.getDiscount()));
-            txtTotalPrice.setText(String.valueOf(orderModel.getTotalPrice()));
+//            orderModel = new OrderModel();
+//            orderModel = sqlLite.getOrderByQuatationNo(shared_quatationNo);
+            txtQuatationNo.setText(orderModelFromDB.getQuatationNo());
+            txtQuatationDate.setText(orderModelFromDB.getQuatationDate());
+            txtProjectName.setText(orderModelFromDB.getProjectName());
+            txtCustomerName.setText(orderModelFromDB.getCustomerName());
+            txtCustomerAdress.setText(orderModelFromDB.getCustomerAdress());
+            txtCustomerPhone.setText(orderModelFromDB.getCustomerPhone());
+            txtCustomerEmail.setText(orderModelFromDB.getCustomerEmail());
+            txtRemarks.setText(orderModelFromDB.getRemarks());
+            txtDiscount.setText(String.valueOf(orderModelFromDB.getDiscount()));
+            txtTotalPrice.setText(String.valueOf(orderModelFromDB.getTotalPrice()));
             getDataToListView(shared_quatationNo);
         }
     }
@@ -205,6 +275,12 @@ public class CreateOrderActivity extends AppCompatActivity {
     private void setEverCreateOrderToSharedPref() {
         editor = sharedPref.edit();
         editor.putString("everCreateOrder", "Not First Order Of Sale");
+        editor.commit();
+    }
+
+    private void setDiscountToSharedPref() {
+        editor = sharedPref.edit();
+        editor.putString("discount", txtDiscount.getText().toString());
         editor.commit();
     }
 
@@ -246,7 +322,20 @@ public class CreateOrderActivity extends AppCompatActivity {
 
         sqlLite = new SQLiteUtil(CreateOrderActivity.this);
         sqlLite.setOrder(orderModel);
-        gotoHomeActivity();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            if (txtDiscount.isFocused()) {
+                Rect outRect = new Rect();
+                txtDiscount.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+                    txtDiscount.clearFocus();
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event);
     }
 
     @Override
@@ -258,22 +347,45 @@ public class CreateOrderActivity extends AppCompatActivity {
     }
 
     private void getDataToListView(String quatationNo) {
-        List<EachOrderModel> eachOrderModelList = new ArrayList<EachOrderModel>();
+        eachOrderModelList = new ArrayList<EachOrderModel>();
         sqlLite = new SQLiteUtil(this);
 
         eachOrderModelList  = sqlLite.getEachOrderList(quatationNo);
-
         listEachOrderListView = (ListView) findViewById(R.id.listViewEachOrder);
 
         ListEachOrderAdapter listEachOrderAdaper = new ListEachOrderAdapter(this, eachOrderModelList);
         listEachOrderListView.setAdapter(listEachOrderAdaper);
+        listEachOrderListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           final int pos, long id) {
+                // TODO Auto-generated method stub
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(CreateOrderActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(CreateOrderActivity.this);
+                }
+                builder.setTitle("คุณต้องการจะลบรายการนี้ใช่หรือไม่")
+//                        .setMessage("Are you sure you want to delete this entry?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                                deleteEachOrderModel(pos);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // do nothing
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                return true;
+            }
+        });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -288,15 +400,48 @@ public class CreateOrderActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.btnCreateEachOrder:
                 Log.i(LOG_TAG, "click to create each order");
-                gotoSelectListActivity();
+                if(isInputsEmpty()){
+                    Toast.makeText(CreateOrderActivity.this, "กรอกข้อมูลให้ครบทุกช่อง", Toast.LENGTH_SHORT).show();
+                }else{
+                    sqlLite = new SQLiteUtil(CreateOrderActivity.this);
+                    orderModelFromDB = new OrderModel();
+                    orderModelFromDB = sqlLite.getOrderByQuatationNo(shared_quatationNo);
+                    if(orderModelFromDB.getQuatationNo() == null){
+                        Log.i(LOG_TAG,"Save Order");
+                        saveOrderToDB();
+                        setQuatationNoDefineToSharedPref();
+                        setEverCreateOrderToSharedPref();
+                    }
+                    gotoSelectListActivity();
+
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    private void deleteEachOrderModel(int position){
+        Log.i(LOG_TAG,"deleteEachOrderList >>>> ID : " + eachOrderModelList.get(position).getID());
+        sqlLite = new SQLiteUtil(this);
+        sqlLite.deleteEachOrderModel(eachOrderModelList.get(position).getID().toString());
+
+        totalPrice = orderModelFromDB.getTotalPrice() - eachOrderModelList.get(position).getTotolPrice();
+        Double realTotalPrice = orderModelFromDB.getRealTotalPrice() - eachOrderModelList.get(position).getTotolPrice();
+
+        if(totalPrice<0){
+            Log.i(LOG_TAG,"totalPrice<0");
+            totalPrice = 0.0;
+        }
+
+        updateOrderModelToDB(totalPrice,realTotalPrice);
+        getDataToListView(shared_quatationNo);
+//        initialData();
+        onStart();
+    }
+
     private boolean isInputsEmpty() {
-        return isEmpty(txtProjectName) || isEmpty(txtCustomerName) || isEmpty(txtCustomerAdress) || isEmpty(txtCustomerPhone) || isEmpty(txtCustomerEmail) || isEmpty(txtRemarks);
+        return isEmpty(txtProjectName) || isEmpty(txtCustomerName) || isEmpty(txtCustomerAdress) || isEmpty(txtCustomerPhone) || isEmpty(txtCustomerEmail);
     }
 
     private boolean isEmpty(EditText etText) {

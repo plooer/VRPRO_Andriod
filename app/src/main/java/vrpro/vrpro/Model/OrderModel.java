@@ -17,6 +17,7 @@ public class OrderModel {
     private String discount;
     private Double totalPrice;
     private String remarks;
+    private Double realTotalPrice;
 
     public Integer getID() {
         return ID;
@@ -104,5 +105,13 @@ public class OrderModel {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
+    }
+
+    public Double getRealTotalPrice() {
+        return realTotalPrice;
+    }
+
+    public void setRealTotalPrice(Double realTotalPrice) {
+        this.realTotalPrice = realTotalPrice;
     }
 }

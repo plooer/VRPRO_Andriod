@@ -47,7 +47,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
     private String ORDER_REMARKS = "remarks";
     private String ORDER_DISCOUNT = "discount";
     private String ORDER_TOTAL_PRICE = "total_price";
-
+    private String ORDER_REAL_TOTAL_PRICE = "real_total_price";
 
     private String EACH_ORDER_TABLE = "each_order_list_table";
     private String EACH_ORDER_ID = "ID";
@@ -109,7 +109,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
 
     private void createTableOrder(SQLiteDatabase db) {
         String CREATE_ORDER = String.format("CREATE TABLE %s " +
-                        "(%s INTEGER PRIMARY KEY  AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
+                        "(%s INTEGER PRIMARY KEY  AUTOINCREMENT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT, %s TEXT)",
                 ORDER_TABLE,
                 ORDER_ID,
                 ORDER_QUATATION_NO,
@@ -121,7 +121,8 @@ public class SQLiteUtil extends SQLiteOpenHelper {
                 ORDER_CUSTOMER_EMAIL,
                 ORDER_REMARKS,
                 ORDER_DISCOUNT,
-                ORDER_TOTAL_PRICE);
+                ORDER_TOTAL_PRICE,
+                ORDER_REAL_TOTAL_PRICE);
 
         db.execSQL(CREATE_ORDER);
 
@@ -208,7 +209,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
     public void setOrder(OrderModel orderModel) {
         Log.i(LOG_TAG,"setOrder");
         sqLiteDatabase = this.getWritableDatabase();
-
+        Log.i(LOG_TAG,"orderModel.getRemarks() : " + orderModel.getRemarks());
         ContentValues values = new ContentValues();
         values.put(ORDER_QUATATION_NO, orderModel.getQuatationNo());
         values.put(ORDER_QUATATION_DATE, orderModel.getQuatationDate());
@@ -220,7 +221,7 @@ public class SQLiteUtil extends SQLiteOpenHelper {
         values.put(ORDER_REMARKS, orderModel.getRemarks());
         values.put(ORDER_DISCOUNT, orderModel.getDiscount());
         values.put(ORDER_TOTAL_PRICE, orderModel.getTotalPrice());
-
+        values.put(ORDER_REAL_TOTAL_PRICE, orderModel.getRealTotalPrice());
 
         sqLiteDatabase.insert(ORDER_TABLE, null, values);
 
@@ -255,20 +256,11 @@ public class SQLiteUtil extends SQLiteOpenHelper {
             orderModel.setRemarks(cursor.getString(8));
             orderModel.setDiscount(cursor.getString(9));
             orderModel.setTotalPrice(cursor.getDouble(10));
-
+            orderModel.setRealTotalPrice(cursor.getDouble(11));
             orderModelList.add(orderModel);
             cursor.moveToNext();
         }
         sqLiteDatabase.close();
-
-        Log.i(LOG_TAG,"------------------------------");
-        for(OrderModel model : orderModelList) {
-            Log.i(LOG_TAG,"id : " + model.getID());
-            Log.i(LOG_TAG,"floor : " + model.getQuatationNo());
-        }
-        Log.i(LOG_TAG,"------------------------------");
-        Log.i(LOG_TAG,"size of list : "+orderModelList.size());
-
 
         return orderModelList;
     }
@@ -302,17 +294,49 @@ public class SQLiteUtil extends SQLiteOpenHelper {
             orderModel.setRemarks(cursor.getString(8));
             orderModel.setDiscount((cursor.getString(9)));
             orderModel.setTotalPrice(cursor.getDouble(10));
+            orderModel.setRealTotalPrice(cursor.getDouble(11));
             cursor.moveToNext();
         }
         sqLiteDatabase.close();
-
-        Log.i(LOG_TAG,"------------------------------");
-        Log.i(LOG_TAG,"id : " + orderModel.getID());
-        Log.i(LOG_TAG,"quatation no : " + orderModel.getQuatationNo());
-        Log.i(LOG_TAG,"customer name : " + orderModel.getCustomerName());
-        Log.i(LOG_TAG,"------------------------------");
-
         return orderModel;
+    }
+
+    public void updateOrder(OrderModel orderModel) {
+        Log.i(LOG_TAG,"updateOrder >>>>> ID : " + orderModel.getID());
+        sqLiteDatabase  = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+//        values.put(PROFILE_SALE_ID, profileSaleModeodel.getID());
+        values.put(ORDER_QUATATION_NO, orderModel.getQuatationNo());
+        values.put(ORDER_QUATATION_DATE, orderModel.getQuatationDate());
+        values.put(ORDER_PROJECT_NAME, orderModel.getProjectName());
+        values.put(ORDER_CUSTOMER_NAME, orderModel.getCustomerName());
+        values.put(ORDER_CUSTOMER_ADDRESS, orderModel.getCustomerAdress());
+        values.put(ORDER_CUSTOMER_PHONE, orderModel.getCustomerPhone());
+        values.put(ORDER_CUSTOMER_EMAIL, orderModel.getCustomerEmail());
+        values.put(ORDER_REMARKS, orderModel.getRemarks());
+        values.put(ORDER_DISCOUNT, orderModel.getDiscount());
+        values.put(ORDER_TOTAL_PRICE, orderModel.getTotalPrice());
+        values.put(ORDER_REAL_TOTAL_PRICE, orderModel.getRealTotalPrice());
+
+        int row = sqLiteDatabase.update(ORDER_TABLE,
+                values,
+                ORDER_ID + " = ? ",
+                new String[] { String.valueOf(orderModel.getID()) });
+
+        sqLiteDatabase.close();
+    }
+
+    public void deleteOrderModel(String id) {
+
+        sqLiteDatabase = this.getWritableDatabase();
+
+    /*sqLiteDatabase.delete(Friend.TABLE, Friend.Column.ID + " = ? ",
+            new String[] { String.valueOf(friend.getId()) });*/
+        sqLiteDatabase.delete(ORDER_TABLE, ORDER_ID + " = " + id, null);
+
+        sqLiteDatabase.close();
+
+        Log.i(LOG_TAG,"Delete OrderModel ID : " + id + " success.");
     }
 
     public void setEachOrderList(EachOrderModel eachOrderModel) {
@@ -373,17 +397,20 @@ public class SQLiteUtil extends SQLiteOpenHelper {
         }
         sqLiteDatabase.close();
 
-//        Log.i(LOG_TAG,"------------------------------");
-//        for(EachOrderModel model : eachOrderModelList) {
-//            Log.i(LOG_TAG,"id : " + model.getID());
-//            Log.i(LOG_TAG,"floor : " + model.getFloor());
-//        }
-//        Log.i(LOG_TAG,"------------------------------");
-//        Log.i(LOG_TAG,"size of list : "+eachOrderModelList.size());
-
-
         return eachOrderModelList;
     }
 
+    public void deleteEachOrderModel(String id) {
+
+        sqLiteDatabase = this.getWritableDatabase();
+
+    /*sqLiteDatabase.delete(Friend.TABLE, Friend.Column.ID + " = ? ",
+            new String[] { String.valueOf(friend.getId()) });*/
+        sqLiteDatabase.delete(EACH_ORDER_TABLE, EACH_ORDER_ID + " = " + id, null);
+
+        sqLiteDatabase.close();
+
+        Log.i(LOG_TAG,"Delete EachOrderModel ID : " + id + " success.");
+    }
 
 }

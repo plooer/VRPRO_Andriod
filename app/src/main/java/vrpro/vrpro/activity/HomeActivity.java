@@ -1,8 +1,11 @@
 package vrpro.vrpro.activity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -40,7 +43,7 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
+        Log.i(LOG_TAG,"onCreate");
         Fabric.with(this, new Crashlytics());
 
 
@@ -48,9 +51,29 @@ public class HomeActivity extends AppCompatActivity {
         setSupportActionBar(mActionBarToolbar);
         getSupportActionBar().setTitle("VRPRO");
 
-
+        SQLiteUtil sqlLite = new SQLiteUtil(this);
+        sqlLite.getWritableDatabase();
         sharedPref = this.getSharedPreferences(getString(R.string.preference_key), Context.MODE_PRIVATE);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(LOG_TAG,"onStart");
+        initialData();
+
+        Button gotoCreateOrderBtn = (Button) findViewById(R.id.gotoCreateOrder);
+        gotoCreateOrderBtn.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(LOG_TAG, "click to create new order");
+                gotoCreateOrderActivity("CREATE NEW ORDER");
+            }
+        });
+
+    }
+
+    private void initialData() {
         sqlLite = new SQLiteUtil(this);
         orderModelList = sqlLite.getOrderList();
         listOrderListView = (ListView) findViewById(R.id.listViewOrder);
@@ -63,20 +86,43 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        Button gotoCreateOrderBtn = (Button) findViewById(R.id.gotoCreateOrder);
-        gotoCreateOrderBtn.setOnClickListener( new View.OnClickListener() {
+        listOrderListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onClick(View v) {
-                Log.i(LOG_TAG, "click to create new order");
-                gotoCreateOrderActivity("CREATE NEW ORDER");
-        }
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           final int pos, long id) {
+                // TODO Auto-generated method stub
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(HomeActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(HomeActivity.this);
+                }
+                builder.setTitle("คุณต้องการจะลบรายการนี้ใช่หรือไม่")
+//                        .setMessage("Are you sure you want to delete this entry?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // continue with delete
+                                deleteOrderModel(pos);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // do nothing
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                return true;
+            }
         });
-
-        SQLiteUtil sqlLite = new SQLiteUtil(this);
-        sqlLite.getWritableDatabase();
-
     }
 
+    private void deleteOrderModel(int position){
+        Log.i(LOG_TAG,"deleteEachOrderList >>>> ID : " + orderModelList.get(position).getID());
+        sqlLite = new SQLiteUtil(this);
+        sqlLite.deleteOrderModel(orderModelList.get(position).getID().toString());
+        initialData();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
